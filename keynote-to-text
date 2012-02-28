@@ -1,0 +1,42 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use XML::Twig;
+use File::Temp qw/tempfile/;
+
+my $xml;
+{
+    my ($fh, $filename) = tempfile();
+    print $fh $_ while $_ = <>;
+    close $fh;
+    $xml = `unzip -p $filename index.apxl`;
+}
+
+binmode( STDOUT, ":utf8" );
+my $t = XML::Twig->new( twig_roots => {
+    'key:presentation/key:slide-list/key:slide' => \&print_slide,
+});
+$t->parse($xml);
+
+sub print_slide {
+    my ($t, $elt) = @_;
+    my $indent = "    " x ($elt->att("key:depth"));
+    print $indent . $elt->first_child_text("key:title-placeholder")."\n";
+
+    my $body = $elt->first_child("key:body-placeholder");
+    return unless $body;
+    my $body_text = $body->first_descendant("sf:text-body");
+    return unless $body_text;
+    return unless $body_text->text =~ /\S/;
+    for my $e ($body_text->children) {
+        if ($e->tag eq "sf:p") {
+            next unless $e->text =~ /\S/;
+            my $subindent = " "x ($e->att("sf:list-level") || 0);
+            print $indent . $subindent . "* ".$e->text."\n";
+        }
+    }
+
+    $t->purge;
+}
