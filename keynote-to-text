@@ -25,6 +25,13 @@ sub print_slide {
     my $indent = "    " x ($elt->att("key:depth"));
     print $indent . $elt->first_child_text("key:title-placeholder")."\n";
 
+    print_body($elt, $indent);
+
+    $t->purge;
+}
+
+sub print_body {
+    my ($elt, $indent) = @_;
     my $body = $elt->first_child("key:body-placeholder");
     return unless $body;
     my $body_text = $body->first_descendant("sf:text-body");
@@ -37,6 +44,4 @@ sub print_slide {
             print $indent . $subindent . "* ".$e->text."\n";
         }
     }
-
-    $t->purge;
 }
