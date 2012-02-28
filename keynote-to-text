@@ -26,6 +26,7 @@ sub print_slide {
     print $indent . $elt->first_child_text("key:title-placeholder")."\n";
 
     print_body($elt, $indent);
+    print_notes($elt, $indent);
 
     $t->purge;
 }
@@ -43,5 +44,18 @@ sub print_body {
             my $subindent = " "x ($e->att("sf:list-level") || 0);
             print $indent . $subindent . "* ".$e->text."\n";
         }
+    }
+}
+
+sub print_notes {
+    my ($elt, $indent) = @_;
+
+    my $notes = $elt->first_child("key:notes");
+    return unless $notes;
+    return unless $notes->text =~ /\S/;
+
+    for my $e ($notes->descendants("sf:p")) {
+        next unless $e->text =~ /\S/;
+        print $indent . " [[ ".$e->text." ]]\n";
     }
 }
