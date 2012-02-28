@@ -42,6 +42,7 @@ sub print_body {
         if ($e->tag eq "sf:p") {
             next unless $e->text =~ /\S/;
             my $subindent = " "x ($e->att("sf:list-level") || 0);
+            $_->set_text("\n$indent$subindent  ") for $e->descendants("sf:lnbr");
             print $indent . $subindent . "* ".$e->text."\n";
         }
     }
